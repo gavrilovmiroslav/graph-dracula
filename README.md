@@ -8,3 +8,5 @@ Brings graph rewriting back from the dead!
 - [x] Subgraph pattern matching (returning all found matches)
 - [ ] Subgraph pattern edits
 - [ ] DOT format import/export
+- [ ] Interesting examples
+- [ ] Documentation
