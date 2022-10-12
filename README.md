@@ -9,4 +9,5 @@ Brings graph rewriting back from the dead!
 - [ ] Subgraph pattern edits
 - [ ] DOT format import/export
 - [ ] Interesting examples
+- [ ] Tests
 - [ ] Documentation
