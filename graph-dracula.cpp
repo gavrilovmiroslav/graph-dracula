@@ -1,11 +1,8 @@
-#include <iostream>
-#include <cstdint>
-#include <cassert>
-#include <unordered_set>
-#include <unordered_map>
-#include <vector>
+﻿#include <iostream>
+#include <ctime>
 
 #include "pattern.h"
+#include "rewrite.h"
 #include "graph.h"
 
 enum class Node
@@ -20,20 +17,35 @@ enum class Node
     Key,
 };
 
+std::string StringifyNode(Node node)
+{
+    switch (node)
+    {
+    case Node::Any: return "?";
+    case Node::Start: return "S";
+    case Node::Entrance: return "e";
+    case Node::Task: return "t";
+    case Node::TaskProgress: return "T";
+    case Node::Goal: return "g";
+    case Node::Lock: return "l";
+    case Node::Key: return "k";
+    }
+}
+
 int main()
 {
-    StandardGraph<Node> graph;
-    auto a = graph.Add(Node::Start);
-    auto b = graph.Add(Node::Entrance);
-    auto c = graph.Add(Node::Goal);
-    auto d = graph.Add(Node::TaskProgress);
-    auto e = graph.Add(Node::TaskProgress);
-    graph.Link(a, b, true);
-    graph.Link(b, c, true);
-    graph.Link(a, d, true);
-    graph.Link(a, e, true);
-    graph.Link(d, c, true);
-    graph.Link(e, d, true);
+    using G = StandardGraph<Node>;
+    G graph;
+    auto a = graph.AddNode(Node::Start);
+    auto b = graph.AddNode(Node::Entrance);
+    auto c = graph.AddNode(Node::Goal);
+    auto d = graph.AddNode(Node::TaskProgress);
+    auto e = graph.AddNode(Node::TaskProgress);
+
+    graph.AddEdges({
+        { a , b }, { a , d }, { a , e },
+        { b , c }, { d , c }, { e , d }
+    });
 
     /*
         Start a0 ------> Entrance b1 -----> Goal c2
@@ -45,19 +57,37 @@ int main()
          TaskProgress e4 --/
     */
 
-    Pattern<Node> pat{
-        { { 0, Node::Any }, { 1, Node::TaskProgress }, { 2, Node::Any } },
-        { { 0 to 1 }, { 1 to 2 } }
+    Pattern<Node> find{
+        { 
+            { 0, Node::Any }, 
+            { 1, Node::TaskProgress }, 
+            { 2, Node::Any } 
+        },
+        { { 0 , 1 }, { 1 , 2 } }
     };
 
-    auto match = graph.Find(pat);
-    for (auto mapping : match)
-    {
-        for (auto entry : mapping)
-        {
-            std::cout << "#" << (int)entry.first << " = " << (int)entry.second << std::endl;
-        }
-        std::cout << "--------------------------------" << std::endl;
-    }
+    std::vector<G::Rewriter*> rewrite{
+        new G::ActionAddNode(3, Node::Key),
+        new G::ActionChangeKind(1, Node::Task),
+        new G::ActionAddEdge(1, 3),
+    };
+
+    auto match = graph.Find(find);
+
+    std::cout << graph.Dot(StringifyNode) << std::endl;
+
+    RewriteConfig config;
+    config.Target = ERewriteTarget::One;
+    config.ChooseOneFn = [](size_t in) -> size_t { return (size_t)(rand() % in); };
+
+    srand(time(0));
+
+    graph.Rewrite(find, rewrite, config);
+    graph.Rewrite(find, rewrite, config);
+    graph.Rewrite(find, rewrite, config);
+    graph.Rewrite(find, rewrite, config);
+
+    std::cout << graph.Dot(StringifyNode) << std::endl;
+
     return 0;
 }
