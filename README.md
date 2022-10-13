@@ -6,8 +6,8 @@ Brings graph rewriting back from the dead!
 
 - [x] Simple graph operations (adding/removing nodes & edges)
 - [x] Subgraph pattern matching (returning all found matches)
-- [ ] Subgraph pattern edits
-- [ ] DOT format import/export
+- [x] Subgraph pattern edits
+- [x] DOT format export
 - [ ] Interesting examples
 - [ ] Tests
 - [ ] Documentation
